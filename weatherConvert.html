@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="contents">
+        <label for="c">섭씨<input type="text" id="c" placeholder="섭씨를 입력하세요." /> <button onclick="showFahrenheit()">화씨로
+                변환</button></label>
+        <br>
+        <label for="f">화씨<input type="text" id="f" placeholder="화씨를 입력하세요." /> <button onclick="showCelsius()">섭씨로
+                변환</button></label>
+        <div id="showResult1"></div>
+        <div id="showResult2"></div>
+    </div>
+
+    <script>
+        function showFahrenheit() {
+            const celsius = parseFloat(document.getElementById("c").value);
+            const fahrenheit = ((celsius * 9 / 5) + 32);
+            const roundedFahrenheit = Math.round(fahrenheit * 100) / 100;
+
+            const result = `<b>섭씨온도 ${celsius}는 화씨온도 ${roundedFahrenheit}입니다.`;
+            document.getElementById("showResult1").innerHTML = result;
+        }
+
+        function showCelsius() {
+            const fahrenheit = parseFloat(document.getElementById("f").value);
+            const celsius = ((fahrenheit - 32) * 5 / 9);
+            const roundedCelsius = Math.round(celsius * 100) / 100;
+
+            const result = `<b>화씨온도 ${fahrenheit}는 섭씨온도 ${roundedCelsius}입니다.`;
+            document.getElementById("showResult2").innerHTML = result;
+        }
+    </script>
+</body>
+
+</html>

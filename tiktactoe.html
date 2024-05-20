@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>틱택토</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+
+        td {
+            border: 1px solid black;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <table>
+        <tr>
+            <td id="td00"></td>
+            <td id="td01">X</td>
+            <td id="td02"></td>
+        </tr>
+        <tr>
+            <td id="td10">O</td>
+            <td id="td11"></td>
+            <td id="td12">O</td>
+        </tr>
+        <tr>
+            <td id="td20"></td>
+            <td id="td21">O</td>
+            <td id="td22">X</td>
+        </tr>
+    </table> -->
+
+    <script>
+        const { body } = document
+        const $table = document.createElement('table')
+        const $result = document.createElement('div') // 결과창
+        const $restartButton = document.createElement('button') // 게임 다시시작 버튼
+        $restartButton.textContent = '게임 다시시작'
+        $restartButton.style.display = 'none' // 처음에는 버튼을 숨김
+
+        const rows = []
+        let turn = 'O'
+        let moves = 0
+        let gameOver = false
+
+        const initGame = () => { // 게임 초기화 함수
+            $table.innerHTML = ''
+            $result.textContent = ''
+            moves = 0
+            turn = 'O'
+            gameOver = false
+            rows.length = 0
+
+            for (let i = 0; i < 3; i += 1) {
+                const $tr = document.createElement('tr')
+                const cells = []
+                for (let j = 0; j < 3; j += 1) {
+                    const $td = document.createElement('td')
+                    $td.addEventListener('click', callback)
+                    cells.push($td)
+                    $tr.appendChild($td)
+                }
+                rows.push(cells)
+                $table.appendChild($tr)
+            }
+        }
+
+        $restartButton.addEventListener('click', () => {
+            initGame()
+            $restartButton.style.display = 'none' // 게임 초기화 후 버튼 숨김
+        })
+
+        const checkWinner = (target) => {
+            let rowIndex
+            let cellIndex
+            rows.forEach((row, ri) => {
+                row.forEach((cell, ci) => {
+                    if (cell === target) {
+                        rowIndex = ri
+                        cellIndex = ci
+                    }
+                })
+            })
+
+            // 세 칸 다 채워졌나?
+            let hasWinner = false
+
+            // 가로줄 검사
+            if (
+                rows[rowIndex][0].textContent === turn &&
+                rows[rowIndex][1].textContent === turn &&
+                rows[rowIndex][2].textContent === turn
+            ) {
+                hasWinner = true
+                // 세로줄 검사
+            } else if (
+                rows[0][cellIndex].textContent === turn &&
+                rows[1][cellIndex].textContent === turn &&
+                rows[2][cellIndex].textContent === turn
+            ) {
+                hasWinner = true
+                // 우하향 대각선 검사
+            } else if (
+                rows[0][0].textContent === turn &&
+                rows[1][1].textContent === turn &&
+                rows[2][2].textContent === turn
+            ) {
+                hasWinner = true
+                // 우상향 대각선 검사
+            } else if (
+                rows[0][2].textContent === turn &&
+                rows[1][1].textContent === turn &&
+                rows[2][0].textContent === turn
+            ) {
+                hasWinner = true
+            }
+
+            return hasWinner
+        }
+
+        const callback = (event) => {
+            if (gameOver) {
+                return // 게임이 끝났다면 클릭이 안됨
+            }
+            if (event.target.textContent !== '') {
+                console.log("빈칸이 아닙니다.")
+                return
+            } else {
+                console.log("빈칸입니다.")
+                event.target.textContent = turn
+                moves += 1
+                if (checkWinner(event.target)) {
+                    $result.textContent = `${turn} 님이 승리하셨습니다!`
+                    $restartButton.style.display = 'block'
+                    gameOver = true // 승리 시 게임 종료
+                } else if (moves === 9) { // 무승부 체크
+                    $result.textContent = '무승부입니다!'
+                    $restartButton.style.display = 'block'
+                    gameOver = true // 무승부 시 게임 종료
+                } else {
+                    turn = turn === 'X' ? 'O' : 'X'
+                }
+            }
+        }
+
+        body.appendChild($table)
+        body.appendChild($result)
+        body.appendChild($restartButton)
+
+        initGame()
+    </script>
+</body>
+
+</html>

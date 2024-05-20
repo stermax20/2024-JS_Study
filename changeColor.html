@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <button id="change">글자색 바꾸기</button>
+    <p>글자색을 빨간색으로 바꿔보자.</p>
+
+    <button id="change2">글자색 바꾸기</button></br>
+    <a>글자색을 파란색으로 바꿔보자.</a>
+    <script>
+        const changeBttn = document.querySelector("#change");
+        changeBttn.onclick = changeColor;
+
+        function changeColor() {
+            document.querySelector("p").style.color = "#f00";
+        }
+
+        const changeColor2 = () => {
+            document.querySelector("a").style.color = "blue";
+        }
+        const changeBttn2 = document.querySelector("#change2");
+        changeBttn2.onclick = changeColor2;
+    </script>
+</body>
+
+</html>

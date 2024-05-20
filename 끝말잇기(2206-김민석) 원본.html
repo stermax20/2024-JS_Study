@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>끝말잇기</title>
+</head>
+
+<body>
+    <!-- 참가자 수 및 게임 요소 출력 -->
+    <div>참가자: <span id="person">1</span></div>
+    <div>라운드: <span id="round">1</span></div>
+    <div>제시어: <span id="word"></span></div>
+    <input type="text" id="relay-word"><button id="enter">입력</button>
+    <!-- 타이머 및 사용된 단어 출력 -->
+    <div id="timer"></div>
+    <div id="used-words"></div>
+    <!-- 게임 종료 시 출력되는 버튼 -->
+    <div id="game-over" style="display: none;"><button id="restart">새로운 게임 시작</button></div>
+
+    <script>
+        // 한글만 입력하도록 하는 함수
+        const onlyKorean = function (event) {
+            const regex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/; // 한국어 정규식
+            const key = event.key; // 입력된 키
+            const isEnterOrBackspace = key === "Enter" || key === "Backspace";
+
+            if (!regex.test(key) && !isEnterOrBackspace) {
+                event.preventDefault(); // 한국어 이외의 입력을 막음
+            }
+        };
+
+        // 한글 단어인지 확인하는 함수
+        const isHangulWord = (word) => {
+            const regex = /^[가-힣]+$/;
+            return regex.test(word);
+        };
+
+        // 초기화
+        let number = Number(prompt("참가자 수를 입력하세요."));
+        let inputTimers = [];
+
+        // DOM 요소
+        const $input = document.querySelector('#relay-word');
+        const $button = document.querySelector('#enter');
+        const $word = document.querySelector('#word');
+        const $person = document.querySelector('#person');
+        const $round = document.querySelector('#round');
+        const $usedWords = document.querySelector('#used-words');
+        const $gameOver = document.querySelector('#game-over');
+        const $restart = document.querySelector('#restart');
+        const $timer = document.querySelector('#timer');
+
+        // 변수 초기화
+        let word;
+        let newWord;
+        let cnt = 1;
+        let usedWords = [];
+        let timeLeft = 10;
+        let timerInterval;
+
+        // 게임 종료 처리
+        const gameOver = () => {
+            clearInterval(timerInterval);
+            alert('경기 종료');
+            $gameOver.style.display = 'block';
+            $input.disabled = true;
+            $button.disabled = true;
+        };
+
+        // 게임 재시작
+        const restartGame = () => {
+            location.reload();
+        };
+
+        // 입력 버튼 클릭 시 처리
+        const onClickButton = () => {
+            newWord = $input.value.trim();
+
+            if (newWord === "") {
+                showAlert("단어를 입력하세요.");
+                $input.focus();
+                return;
+            }
+
+            if (newWord.length === 1) {
+                showAlert("한 글자 이상의 단어를 입력하세요.");
+                $input.value = "";
+                $input.focus();
+                return;
+            }
+
+            if (word && word[word.length - 1] !== newWord[0]) {
+                showAlert("잘못된 단어를 입력했습니다.");
+                $input.value = "";
+                $input.focus();
+                return;
+            }
+
+            if (usedWords.includes(newWord)) {
+                showAlert("중복된 단어입니다. 다시 입력하세요.");
+                $input.value = "";
+                $input.focus();
+                return;
+            }
+
+            if (!isHangulWord(newWord)) {
+                alert("한글 단어만 입력해주세요.");
+                gameOver();
+                return;
+            }
+
+            word = newWord;
+            usedWords.push(word);
+            $word.textContent = word;
+            $input.value = "";
+            updateStatus();
+            resetTimer();
+        };
+
+        // 게임 상태 업데이트
+        const updateStatus = () => {
+            if (cnt % number === 0) {
+                $round.textContent = parseInt($round.textContent) + 1;
+                cnt = 0;
+            }
+            cnt++;
+            $person.textContent = cnt;
+            $usedWords.textContent = usedWords.slice().reverse().join(', ');
+        };
+
+        // 타이머 초기화
+        const resetTimer = () => {
+            clearInterval(timerInterval);
+            timeLeft = 10;
+            $timer.textContent = '남은 시간: ' + timeLeft + '초';
+            timerInterval = setInterval(() => {
+                timeLeft -= 1;
+                $timer.textContent = '남은 시간: ' + timeLeft + '초';
+                if (timeLeft <= 0) {
+                    gameOver();
+                }
+            }, 1000);
+        };
+
+        // 알림 메시지 출력
+        const showAlert = (message) => {
+            setTimeout(() => {
+                alert(message);
+            }, 0);
+        };
+
+        // 이벤트 리스너 등록
+        $input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                onClickButton();
+            }
+        });
+
+        $input.addEventListener('keydown', onlyKorean);
+        $button.addEventListener('click', onClickButton);
+        $restart.addEventListener('click', restartGame);
+
+        resetTimer();
+        if (isNaN(number) || number <= 0) {
+            gameOver();
+        } else {
+            $input.focus();
+        }
+    </script>
+</body>
+
+</html>

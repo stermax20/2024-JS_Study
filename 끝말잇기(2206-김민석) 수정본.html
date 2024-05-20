@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>끝말잇기</title>
+</head>
+
+<body>
+    <div>참가자: <span id="person">1</span></div>
+    <div>라운드: <span id="round">1</span></div>
+    <div>제시어: <span id="word"></span></div>
+    <input type="text" id="relay-word"><button id="enter">입력</button>
+    <div id="timer"></div>
+    <div id="used-words"></div>
+    <div id="game-over" style="display: none;"><button id="restart">새로운 게임 시작</button></div>
+
+<script>
+let number
+
+while (!(number = parseInt(prompt('참가자 수를 입력하세요.'))) || !/^\d+$/.test(number)) { // 숫자만 입력 받도록 반복
+}
+
+const $input     = document.querySelector('#relay-word')
+const $button    = document.querySelector('#enter')
+const $word      = document.querySelector('#word')
+const $person    = document.querySelector('#person')
+const $round     = document.querySelector('#round')
+const $usedWords = document.querySelector('#used-words')
+const $gameOver  = document.querySelector('#game-over')
+const $restart   = document.querySelector('#restart')
+const $timer     = document.querySelector('#timer')
+
+let word         = ''                                    // 현재 단어
+let cnt          = 1                                     // 현재 차례
+let usedWords    = []                                    // 사용된 단어 배열
+let initTime     = 10                                    // 초기 시간(10초)
+let timer                                                // setTimeout 함수에 참조됨
+
+const gameOver = () => {
+    clearTimeout(timer)                                  // 타이머 초기화
+    alert('끝말잇기 종료')
+    $gameOver.style.display = 'block'                    // 게임 종료 화면 표시
+    $input.disabled         = true                       // 입력창 비활성화
+    $button.disabled        = true                       // 버튼 비활성화
+}
+
+const initInput = () => {
+    $input.value = ''
+    $input.focus()
+}
+
+const initGame = () => {
+    number
+
+    while (!(number = parseInt(prompt('참가자 수를 입력하세요.'))) || !/^\d+$/.test(number)) { // 참가자 수 재입력
+    }
+    
+    word                    = ''                                          // 단어 초기화
+    cnt                     = 1                                           // 차례 초기화
+    usedWords               = []                                          // 사용된 단어 배열 초기화
+    initTime                = 10                                          // 시간 초기화
+    clearTimeout(timer);                                                  // 타이머 초기화
+    $word.textContent       = ''                                          // 단어 화면 초기화
+    $person.textContent     = '1'                                         // 차례 화면 초기화
+    $round.textContent      = '1'                                         // 라운드 화면 초기화
+    $usedWords.textContent  = ''                                          // 사용된 단어 화면 초기화
+    $gameOver.style.display = 'none'                                      // 게임 종료 화면 숨김
+    $input.disabled         = false                                       // 입력창 활성화
+    $button.disabled        = false                                       // 버튼 활성화
+    initInput()                                                           // 입력창 초기화
+    startTimer()                                                          // 타이머 시작
+}
+
+const onClickButton = () => {
+    const newWord = $input.value                                   // 입력된 새 단어
+
+    if (newWord == '') {                                           // 입력된 것이 공백일때
+        $input.focus()
+        return alert('단어를 입력하세요.')
+    }
+    if (newWord.length < 2) {                                      // 입력된 단어가 한 글자일때
+        initInput()
+        return alert('두글자 이상 입력해주세요.')
+    }
+    if (newWord.length > 3) {                                      // 입력된 단어가 세 글자가 넘을 때
+        initInput()
+        return alert('입력된 단어는 3글자를 초과할 수 없습니다.')
+    }
+    if (word && word[word.length - 1] !== newWord[0]) {            // 현재 단어의 마지막 글자와 새로운 단어의 첫 글자가 다르다면?
+        initInput()
+        return alert('잘못된 단어를 입력했습니다.')
+    }
+    if (usedWords.includes(newWord)) {                             // 새로운 단어가 배열 속 저장된 단어에 이미 있다면?
+        initInput()
+        alert('중복된 단어입니다. 게임을 종료합니다.')
+        gameOver()
+        return
+    }
+
+    word                    = newWord
+    usedWords.push(word)
+    $word.textContent       = word
+    $input.value            = ''
+    updateStatus()
+    startTimer()
+}
+
+const updateStatus = () => {                                        // 차례, 라운드, 사용된 단어 화면 업데이트 함수
+    if (cnt % number === 0) {                                       // 모든 참가자가 한 바퀴를 돌면 라운드 증가
+        $round.textContent = parseInt($round.textContent) + 1
+        cnt = 0
+    }
+    cnt++                                                           // 차례 증가
+    $person.textContent = cnt                                       // 화면에 차례 표시
+    $usedWords.textContent = usedWords.slice().reverse().join(', ') // 최근에 사용된 단어 순으로 화면에 표시
+}
+
+const timerDisplay = () => {                                        // 타이머 화면 업데이트 함수
+    $timer.textContent = '남은 시간: ' + initTime + '초'
+}
+
+const startTimer = () => {
+    initTime = 10                             // 시간 초기화
+    timerDisplay()                            // 화면에 시간 표시
+    clearTimeout(timer)                       // 기존 타이머 초기화
+    const updateTimer = () => {
+        initTime--                            // 시간 감소
+        timerDisplay()                        // 화면에 시간 표시
+        timer = setTimeout(updateTimer, 1000) // 1초 후 updateTimer 함수 재귀 호출
+        if (initTime === 0) gameOver()        // 시간이 0이 되면 게임 종료
+    }
+    timer = setTimeout(updateTimer, 1000)     // 1초 후 updateTimer 함수 호출
+}
+
+$input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        onClickButton()
+    } else if (e.key === ' ' && $input.value !== '') { // 스페이스 키를 눌렀을 때, 입력된 값이 있는 경우에만 처리
+        e.preventDefault()                             // 스페이스 키의 기본 동작(공백 입력)을 막음
+    }
+})
+
+$input.addEventListener('input', (event) => {
+    const newWord = $input.value
+    if (event.inputType === 'deleteContentBackward') {                                // 백스페이스 키 허용
+        return
+    }
+    const koreanOnly = newWord.replace(/[^ㄱ-ㅎ|가-힣]/g, '')                         // 한글 이외의 문자 제거
+    if (newWord !== koreanOnly) {                                                     // 새로운 단어가 한글이 아닐 때
+        $input.value = koreanOnly
+        return initInput()
+    }
+    const isNotInitial = /([ㄱ-ㅎ])(?:[가-힣]*\1(?![ㄱ-ㅎ]))+[가-힣]*/.test(newWord)  // 초성 검사
+    if (isNotInitial) {
+        return initInput()
+    }
+})
+
+$button.addEventListener('click', onClickButton)
+$restart.addEventListener('click', initGame)
+
+startTimer()
+</script>
+</body>
+
+</html>
