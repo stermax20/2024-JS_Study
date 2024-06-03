@@ -24,6 +24,24 @@
 </head>
 
 <body>
+    <!-- <table>
+        <tr>
+            <td id="td00"></td>
+            <td id="td01">X</td>
+            <td id="td02"></td>
+        </tr>
+        <tr>
+            <td id="td10">O</td>
+            <td id="td11"></td>
+            <td id="td12">O</td>
+        </tr>
+        <tr>
+            <td id="td20"></td>
+            <td id="td21">O</td>
+            <td id="td22">X</td>
+        </tr>
+    </table> -->
+
     <script>
         const { body } = document
         const $table = document.createElement('table')
@@ -62,6 +80,17 @@
         }
 
         const checkWinner = (target) => {
+            // let rowIndex
+            // let cellIndex
+            // rows.forEach((row, ri) => {
+            //     row.forEach((cell, ci) => {
+            //         if (cell === target) {
+            //             rowIndex = ri
+            //             cellIndex = ci
+            //         }
+            //     })
+            // })
+
             const rowIndex = target.parentNode.rowIndex // tr의 행 인덱스
             const cellIndex = target.cellIndex // td의 열 인덱스
 
