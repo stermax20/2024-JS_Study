@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>끝말잇기</title>
+</head>
+
+<body>
+    <div id="game-info">
+        참가자: <span id="person">1</span><br>
+        라운드: <span id="round">1</span><br>
+        제시어: <span id="word"></span><br>
+    </div>
+    <div id="player-names"></div>
+    <input type="text" id="relay-word"><button id="enter">입력</button>
+    <div id="timer"></div>
+    <div id="used-words"></div>
+    <div id="game-start"><button id="start">게임 시작</button></div>
+    <div id="game-over" style="display: none;"><button id="restart">새로운 게임 시작</button></div>
+    <div id="game-continue" style="display: none;"><button id="continue">게임 계속하기</button></div>
+
+    <script>
+        let number, names = [], eliminated = [], minWordLength = []
+
+        while (!(number = parseInt(prompt('참가자 수를 입력하세요.'))) || !/^\d+$/.test(number)) { }
+
+        for (let i = 0; i < number; i++) {
+            names.push(prompt(`참가자 ${i + 1}의 이름을 입력하세요.`));
+        }
+
+        while (!(minWordLength = parseInt(prompt('단어의 최소 글자수를 입력하세요.'))) || !/^\d+$/.test(minWordLength)) { }
+
+        const $input = document.querySelector('#relay-word')
+        const $button = document.querySelector('#enter')
+        const $word = document.querySelector('#word')
+        const $person = document.querySelector('#person')
+        const $round = document.querySelector('#round')
+        const $usedWords = document.querySelector('#used-words')
+        const $start = document.querySelector('#start')
+        const $gameOver = document.querySelector('#game-over')
+        const $restart = document.querySelector('#restart')
+        const $timer = document.querySelector('#timer')
+        const $playerNames = document.querySelector('#player-names')
+        const $gameContinue = document.querySelector('#game-continue')
+        const $continue = document.querySelector('#continue')
+
+        const gameStart = () => {
+            word = ''
+            cnt = 1
+            usedWords = []
+            initTime = 10
+            clearTimeout(timer)
+            $word.textContent = ''
+            $person.textContent = '1'
+            $round.textContent = '1'
+            $usedWords.textContent = ''
+            $start.style.display = 'none'
+            $gameOver.style.display = 'none'
+            $gameContinue.style.display = 'none'
+            $input.disabled = false
+            $button.disabled = false
+            initInput()
+            startTimer()
+            displayPlayers()
+        }
+
+        const gameOver = (isTimeout = false) => {
+            clearTimeout(timer)
+            alert(isTimeout ? `${names[cnt - 1]}님이 탈락하였습니다.` : '끝말잇기 종료')
+            if (isTimeout) {
+                eliminated.push(names[cnt - 1])
+                names.splice(cnt - 1, 1)
+                $gameContinue.style.display = 'block'
+            } else {
+                $gameOver.style.display = 'block'
+            }
+            $input.disabled = true
+            $button.disabled = true
+        }
+
+        const initInput = () => {
+            $input.value = ''
+            $input.focus()
+        }
+
+        const initGame = () => {
+            while (!(number = parseInt(prompt('참가자 수를 입력하세요.'))) || !/^\d+$/.test(number)) { }
+
+            names = []
+            eliminated = []
+            for (let i = 0; i < number; i++) {
+                names.push(prompt(`참가자 ${i + 1}의 이름을 입력하세요.`));
+            }
+
+            word = ''
+            cnt = 1
+            usedWords = []
+            initTime = 10
+            clearTimeout(timer)
+            $word.textContent = ''
+            $person.textContent = '1'
+            $round.textContent = '1'
+            $usedWords.textContent = ''
+            $gameOver.style.display = 'none'
+            $gameContinue.style.display = 'none'
+            $input.disabled = false
+            $button.disabled = false
+            initInput()
+            startTimer()
+            displayPlayers()
+        }
+
+        const displayPlayers = () => {
+            $playerNames.innerHTML = '참가자: ' + names.join(', ')
+        }
+
+        const onClickButton = () => {
+            const newWord = $input.value
+
+            if (newWord == '') {
+                $input.focus()
+                return alert('단어를 입력하세요.')
+            }
+            if (newWord.length < minWordLength) {
+                initInput()
+                return alert(`${minWordLength}글자 이상의 단어를 입력해야 합니다.`)
+            }
+            if (newWord.length > minWordLength) {
+                initInput()
+                return alert(`입력된 단어는 ${minWordLength}글자를 초과할 수 없습니다.`)
+            }
+            if (word && word[word.length - 1] !== newWord[0]) {
+                initInput()
+                return alert('잘못된 단어를 입력했습니다.')
+            }
+            if (usedWords.includes(newWord)) {
+                initInput()
+                alert('중복된 단어입니다. 다시 입력하세요.')
+                return
+            }
+
+            word = newWord
+            usedWords.push(word)
+            $word.textContent = word
+            $input.value = ''
+            updateStatus()
+            startTimer()
+        }
+
+        const updateStatus = () => {
+            if (cnt % names.length === 0) {
+                $round.textContent = parseInt($round.textContent) + 1
+                cnt = 0
+            }
+            cnt++
+            $person.textContent = cnt
+            $usedWords.textContent = usedWords.slice().reverse().join(', ')
+        }
+
+        const timerDisplay = () => {
+            $timer.textContent = '남은 시간: ' + initTime + '초'
+        }
+
+        const startTimer = () => {
+            initTime = 10
+            timerDisplay()
+            clearTimeout(timer)
+            const updateTimer = () => {
+                initTime--
+                timerDisplay()
+                timer = setTimeout(updateTimer, 1000)
+                if (initTime === 0) gameOver(true)
+            }
+            timer = setTimeout(updateTimer, 1000)
+        }
+
+        $input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                onClickButton()
+            } else if (e.key === ' ' && $input.value !== '') {
+                e.preventDefault()
+            }
+        })
+
+        $input.addEventListener('input', (event) => {
+            const newWord = $input.value
+            if (event.inputType === 'deleteContentBackward') {
+                return
+            }
+            const koreanOnly = newWord.replace(/[^ㄱ-ㅎ|가-힣]/g, '')
+            if (newWord !== koreanOnly) {
+                $input.value = koreanOnly
+                return initInput()
+            }
+            const isNotInitial = /([ㄱ-ㅎ])(?:[가-힣]*\1(?![ㄱ-ㅎ]))+[가-힣]*/.test(newWord)
+            if (isNotInitial) {
+                return initInput()
+            }
+        })
+
+        $button.addEventListener('click', onClickButton)
+        $start.addEventListener('click', gameStart)
+        $restart.addEventListener('click', initGame)
+        $continue.addEventListener('click', () => {
+            $gameContinue.style.display = 'none'
+            $input.disabled = false
+            $button.disabled = false
+            initInput()
+            startTimer()
+            displayPlayers()
+        })
+
+        startTimer()
+        displayPlayers()
+    </script>
+</body>
+
+</html>
